@@ -1,328 +1,159 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enterprise Dashboard & Admin Panel</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: #0b071e; color: #fff; display: flex; flex-direction: column; min-height: 100vh; }
-
-        /* HEADER */
-        header { background: #150f35; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #281d58; position: sticky; top: 0; z-index: 100; }
-        .menu-btn { font-size: 22px; cursor: pointer; color: #fff; background: none; border: none; }
-        .logo { font-weight: bold; font-size: 18px; color: #ffab00; letter-spacing: 1px; }
-        .admin-link-btn { background: #7c4dff; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; }
-
-        /* SIDEBAR */
-        .sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: #0e0926; transition: 0.3s ease; z-index: 200; padding-top: 20px; box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
-        .sidebar.active { left: 0; }
-        .user-profile-side { padding: 20px; text-align: center; border-bottom: 1px solid #23184f; }
-        .avatar { width: 60px; height: 60px; background: #2196F3; border-radius: 50%; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; font-size: 30px; }
-        .sidebar ul { list-style: none; padding: 20px 0; }
-        .sidebar ul li { padding: 12px 25px; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 15px; color: #b2a8d9; text-transform: uppercase; letter-spacing: 0.5px; }
-        .sidebar ul li:hover, .sidebar ul li.active { background: #1d1348; color: #fff; border-left: 4px solid #7c4dff; }
-
-        /* OVERLAY */
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; z-index: 150; }
-        .overlay.active { display: block; }
-
-        /* MAIN CONTAINER */
-        .container { padding: 15px; max-width: 800px; margin: 0 auto; width: 100%; }
-
-        /* PROFILE CARD */
-        .user-card { background: linear-gradient(135deg, #150a2a, #1f1140); border: 1px solid #331d68; border-radius: 12px; padding: 15px; margin-bottom: 15px; position: relative; }
-        .user-card .row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
-        .user-card .label { color: #8f85b8; font-weight: 500; }
-        .user-card .value { color: #fff; font-weight: bold; }
-        .status-badge { background: #00c853; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 11px; }
-
-        /* REFERRAL BOX */
-        .ref-box { background: #130a27; border: 1px solid #2d1859; border-radius: 12px; padding: 15px; margin-bottom: 15px; }
-        .ref-title { font-size: 12px; color: #8f85b8; text-align: center; margin-bottom: 8px; }
-        .ref-input { width: 100%; background: #090414; border: 1px solid #3d2475; padding: 10px; border-radius: 6px; color: #8f85b8; font-size: 12px; margin-bottom: 10px; text-align: center; }
-        .btn-group { display: flex; gap: 8px; }
-        .btn-action { flex: 1; padding: 10px; border: none; border-radius: 6px; color: white; font-weight: bold; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; }
-        .btn-blue { background: #29b6f6; }
-        .btn-green { background: #26a69a; }
-        .btn-telegram { background: #0288d1; }
-
-        /* COMMUNITY CARDS */
-        .community-card { background: linear-gradient(90deg, #12092b, #1d0f44); border: 1px solid #2e185d; border-radius: 10px; padding: 12px 15px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
-        .community-info { display: flex; align-items: center; gap: 12px; }
-        .community-info i { font-size: 24px; }
-        .btn-join { background: #7c4dff; color: white; border: none; padding: 6px 15px; border-radius: 6px; font-size: 12px; cursor: pointer; }
-
-        /* GRID STATS CARDS */
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
-        .stat-card { background: linear-gradient(135deg, #180d38, #100826); border-radius: 10px; padding: 12px 15px; border: 1px solid #2c1854; display: flex; align-items: center; gap: 12px; }
-        .stat-icon { width: 38px; height: 38px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
-        .stat-info .title { font-size: 11px; color: #a499d3; text-transform: uppercase; margin-bottom: 3px; }
-        .stat-info .amount { font-size: 15px; font-weight: bold; color: #fff; }
-
-        /* QUICK ACTION BUTTONS GRID */
-        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px; }
-        .action-card { background: #150a2e; border: 1px solid #2d165b; border-radius: 10px; padding: 12px 5px; text-align: center; cursor: pointer; }
-        .action-card i { font-size: 20px; margin-bottom: 5px; display: block; }
-        .action-card span { font-size: 10px; color: #b2a8d9; text-transform: uppercase; }
-
-        /* BOTTOM NAVBAR */
-        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #120929; border-top: 1px solid #26144e; display: flex; justify-content: space-around; padding: 8px 0; z-index: 100; }
-        .nav-item { text-align: center; color: #8e82bd; font-size: 11px; text-decoration: none; cursor: pointer; }
-        .nav-item i { font-size: 18px; display: block; margin-bottom: 2px; }
-        .nav-item.active { color: #ffab00; }
-
-        /* MODAL POPUPS */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 300; justify-content: center; align-items: center; padding: 20px; }
-        .modal-content { background: #180e38; padding: 20px; border-radius: 12px; width: 100%; max-width: 400px; border: 1px solid #4a2d8b; text-align: center; position: relative; }
-        .modal-content h3 { margin-bottom: 15px; color: #ffab00; }
-        .modal-content input { width: 100%; padding: 10px; margin: 8px 0; border-radius: 6px; border: 1px solid #444; background: #0c061f; color: white; box-sizing: border-box; }
-        .modal-btn { width: 100%; padding: 10px; border-radius: 6px; border: none; font-weight: bold; margin-top: 10px; cursor: pointer; background: #7c4dff; color: white; }
-        .close-btn { position: absolute; top: 10px; right: 15px; color: #aaa; font-size: 20px; cursor: pointer; }
-
-        /* ADMIN PANEL STYLING */
-        #admin-view { display: none; padding: 15px; max-width: 900px; margin: 0 auto; width: 100%; }
-        .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: #180e38; padding: 15px; border-radius: 8px; border: 1px solid #331d68; }
-        .table-responsive { width: 100%; overflow-x: auto; background: #150a2e; border-radius: 8px; border: 1px solid #2d165b; }
-        table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; }
-        th, td { padding: 12px 10px; border-bottom: 1px solid #26144e; }
-        th { background: #1d0f44; color: #ffab00; }
-        .badge-active { background: #00c853; color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 10px; }
-        .badge-inactive { background: #ff1744; color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 10px; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Investment Plan Calculator</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    body {
+      background-color: #0b071e;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .card {
+      background: #180e38;
+      padding: 30px;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 450px;
+      border: 1px solid #331d68;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    }
+    h2 {
+      margin-bottom: 20px;
+      color: #ffab00;
+      text-align: center;
+    }
+    .input-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 0.9rem;
+      color: #b2a8d9;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #3d2475;
+      background-color: #0c061f;
+      color: #fff;
+      font-size: 1rem;
+    }
+    input:focus {
+      outline: none;
+      border-color: #7c4dff;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 6px;
+      background-color: #7c4dff;
+      color: #fff;
+      font-weight: bold;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background-color: #5e35b1;
+    }
+    .result {
+      margin-top: 20px;
+      padding: 15px;
+      background: #0c061f;
+      border-radius: 6px;
+      border: 1px solid #2d1859;
+      display: none;
+    }
+    .result-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 0.95rem;
+    }
+    .result-item:last-child {
+      margin-bottom: 0;
+      padding-top: 8px;
+      border-top: 1px solid #331d68;
+      font-weight: bold;
+      color: #00c853;
+    }
+  </style>
 </head>
 <body>
 
-    <!-- USER VIEW -->
-    <div id="user-view">
-        <!-- HEADER -->
-        <header>
-            <button class="menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-            <div class="logo">ENTERPRISES</div>
-            <button class="admin-link-btn" onclick="showAdminLogin()"><i class="fas fa-user-shield"></i> Admin Panel</button>
-        </header>
-
-        <!-- SIDEBAR -->
-        <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
-        <div class="sidebar" id="sidebar">
-            <div class="user-profile-side">
-                <div class="avatar"><i class="fas fa-user"></i></div>
-                <h4 id="side-username">Ramesh Chandra</h4>
-            </div>
-            <ul>
-                <li class="active" onclick="toggleSidebar()"><i class="fas fa-home"></i> Dashboard</li>
-                <li onclick="showModal('profile-modal'); toggleSidebar();"><i class="fas fa-user-circle"></i> Profile</li>
-                <li onclick="showModal('fund-modal'); toggleSidebar();"><i class="fas fa-box"></i> Purchase Package</li>
-                <li onclick="showModal('fund-modal'); toggleSidebar();"><i class="fas fa-wallet"></i> Fund Manager</li>
-                <li onclick="alert('My Team: 0 Members'); toggleSidebar();"><i class="fas fa-users"></i> Team And Network</li>
-                <li onclick="showModal('withdraw-modal'); toggleSidebar();"><i class="fas fa-money-bill-wave"></i> Wallet Withdrawal</li>
-                <li onclick="openCommunity('telegram'); toggleSidebar();"><i class="fas fa-headset"></i> Support</li>
-                <li onclick="logout();"><i class="fas fa-sign-out-alt"></i> Logout</li>
-            </ul>
-        </div>
-
-        <!-- MAIN CONTAINER -->
-        <div class="container" style="padding-bottom: 70px;">
-
-            <!-- USER PROFILE CARD -->
-            <div class="user-card">
-                <div class="row"><span class="label">NAME :</span><span class="value">Ramesh Chandra</span></div>
-                <div class="row"><span class="label">EMAIL-ID :</span><span class="value" style="color: #29b6f6;">abhishekvishkrma45@gmail.com</span></div>
-                <div class="row"><span class="label">PACKAGE :</span><span class="value" style="background:#00c853; padding:2px 8px; border-radius:4px;">₹ 1000.00</span></div>
-                <div class="row"><span class="label">STATUS :</span><span class="value"><span class="status-badge">ACTIVE</span></span></div>
-                <div class="row"><span class="label">SPONSOR ID :</span><span class="value">AD40759</span></div>
-                <div class="row"><span class="label">ACTIVE DATE :</span><span class="value">2026-08-20 15:41:50</span></div>
-            </div>
-
-            <!-- REFERRAL SECTION -->
-            <div class="ref-box">
-                <div class="ref-title">REFERRAL URL</div>
-                <input type="text" id="refLink" class="ref-input" value="https://adbharatenterprises.world/authUserRegister?affiliateCode=AD09695" readonly>
-                <div class="btn-group">
-                    <button class="btn-action btn-blue" onclick="copyReferral()"><i class="fas fa-copy"></i> COPY</button>
-                    <button class="btn-action btn-green" onclick="shareWhatsApp()"><i class="fab fa-whatsapp"></i> WHATSAPP</button>
-                    <button class="btn-action btn-telegram" onclick="shareTelegram()"><i class="fab fa-telegram-plane"></i> TELEGRAM</button>
-                </div>
-            </div>
-
-            <!-- COMMUNITY CARDS -->
-            <div class="community-card">
-                <div class="community-info">
-                    <i class="fab fa-telegram" style="color: #0088cc;"></i>
-                    <div>
-                        <div style="font-size: 13px; font-weight: bold;">Join Our Telegram</div>
-                        <div style="font-size: 10px; color: #8f85b8;">Get the latest updates, announcements & news.</div>
-                    </div>
-                </div>
-                <button class="btn-join" onclick="openCommunity('telegram')">Join Now</button>
-            </div>
-
-            <div class="community-card">
-                <div class="community-info">
-                    <i class="fab fa-whatsapp" style="color: #25d366;"></i>
-                    <div>
-                        <div style="font-size: 13px; font-weight: bold;">Join Our WhatsApp</div>
-                        <div style="font-size: 10px; color: #8f85b8;">Get the latest updates, announcements & news.</div>
-                    </div>
-                </div>
-                <button class="btn-join" onclick="openCommunity('whatsapp')">Join Now</button>
-            </div>
-
-            <!-- STATS GRID 1 -->
-            <div class="grid-2">
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: #1b4332; color: #2ea043;"><i class="fas fa-wallet"></i></div>
-                    <div class="stat-info">
-                        <div class="title">TOTAL EARNINGS</div>
-                        <div class="amount">₹ 1,809.00</div>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: #0d2b45; color: #208b3a;"><i class="fas fa-briefcase"></i></div>
-                    <div class="stat-info">
-                        <div class="title">SELF BUSINESS</div>
-                        <div class="amount">₹ 1,000.00</div>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: #3c096c; color: #9d4edd;"><i class="fas fa-gift"></i></div>
-                    <div class="stat-info">
-                        <div class="title">INCOME WALLET</div>
-                        <div class="amount">₹ 9.00</div>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon" style="background: #4a0e17; color: #f72585;"><i class="fas fa-box"></i></div>
-                    <div class="stat-info">
-                        <div class="title">FUND WALLET</div>
-                        <div class="amount">₹ 0.00</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ACTION BUTTONS GRID -->
-            <div class="grid-4">
-                <div class="action-card" onclick="alert('Account Pehle se Active hai!')">
-                    <i class="fas fa-power-off" style="color: #00e676;"></i>
-                    <span>ACTIVATION</span>
-                </div>
-                <div class="action-card" onclick="showModal('withdraw-modal')">
-                    <i class="fas fa-university" style="color: #e040fb;"></i>
-                    <span>WITHDRAW</span>
-                </div>
-                <div class="action-card" onclick="alert('My Team: 0 Direct Members')">
-                    <i class="fas fa-users" style="color: #29b6f6;"></i>
-                    <span>MY TEAM</span>
-                </div>
-                <div class="action-card" onclick="showModal('fund-modal')">
-                    <i class="fas fa-plus-circle" style="color: #ffb300;"></i>
-                    <span>ADD FUND</span>
-                </div>
-            </div>
-
-        </div>
-
-        <!-- BOTTOM NAVBAR -->
-        <div class="bottom-nav">
-            <a class="nav-item active" onclick="window.scrollTo({top:0, behavior:'smooth'});"><i class="fas fa-home"></i>Home</a>
-            <a class="nav-item" onclick="showModal('profile-modal')"><i class="fas fa-user"></i>Profile</a>
-            <a class="nav-item" onclick="showModal('pass-modal')"><i class="fas fa-key"></i>Password</a>
-            <a class="nav-item" onclick="logout()"><i class="fas fa-sign-out-alt"></i>Log out</a>
-        </div>
+  <div class="card">
+    <h2>Investment Plan</h2>
+    
+    <div class="input-group">
+      <label for="principal">Initial Investment (₹)</label>
+      <input type="number" id="principal" placeholder="e.g. 10000">
     </div>
 
-    <!-- ADMIN VIEW PANEL -->
-    <div id="admin-view">
-        <div class="admin-header">
-            <div>
-                <h2 style="color: #ffab00;">Admin Control Panel</h2>
-                <span style="font-size: 12px; color: #aaa;">Logged in as: <b>Admin</b></span>
-            </div>
-            <button class="btn-action btn-blue" style="max-width: 120px;" onclick="closeAdmin()"><i class="fas fa-arrow-left"></i> Exit Admin</button>
-        </div>
-
-        <!-- STATS OVERVIEW -->
-        <div class="grid-2">
-            <div class="stat-card">
-                <div class="stat-icon" style="background: #1b4332; color: #2ea043;"><i class="fas fa-users"></i></div>
-                <div class="stat-info">
-                    <div class="title">TOTAL USERS</div>
-                    <div class="amount" id="total-users-count">3</div>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon" style="background: #0d2b45; color: #208b3a;"><i class="fas fa-rupee-sign"></i></div>
-                <div class="stat-info">
-                    <div class="title">TOTAL DEPOSITS</div>
-                    <div class="amount">₹ 3,000.00</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- REGISTERED MEMBERS TABLE -->
-        <h3 style="margin: 15px 0; color: #b2a8d9; font-size: 15px;">Registered Members List</h3>
-        <div class="table-responsive">
-            <table>
-                <thead>
-                    <tr>
-                        <th>S.No</th>
-                        <th>User Name</th>
-                        <th>Email ID</th>
-                        <th>Sponsor ID</th>
-                        <th>Package</th>
-                        <th>Status</th>
-                        <th>Date</th>
-                    </tr>
-                </thead>
-                <tbody id="member-table-body">
-                    <!-- Dynamic Rows Loaded via JS -->
-                </tbody>
-            </table>
-        </div>
+    <div class="input-group">
+      <label for="rate">Expected Return (% per year)</label>
+      <input type="number" id="rate" placeholder="e.g. 12" step="0.1">
     </div>
 
-    <!-- MODAL POPUPS -->
-    <!-- ADMIN LOGIN MODAL -->
-    <div class="modal" id="admin-login-modal">
-        <div class="modal-content">
-            <span class="close-btn" onclick="closeModal('admin-login-modal')">&times;</span>
-            <h3>Admin Login</h3>
-            <input type="text" id="admin-username" placeholder="Admin Username">
-            <input type="password" id="admin-password" placeholder="Admin Password">
-            <button class="modal-btn" onclick="verifyAdminLogin()">Login to Panel</button>
-        </div>
+    <div class="input-group">
+      <label for="years">Duration (Years)</label>
+      <input type="number" id="years" placeholder="e.g. 5">
     </div>
 
-    <!-- WITHDRAW MODAL -->
-    <div class="modal" id="withdraw-modal">
-        <div class="modal-content">
-            <span class="close-btn" onclick="closeModal('withdraw-modal')">&times;</span>
-            <h3>Wallet Withdrawal</h3>
-            <p style="font-size: 12px; color: #aaa; margin-bottom: 10px;">Available Income: ₹ 9.00</p>
-            <input type="number" placeholder="Enter Amount (Min ₹100)">
-            <input type="text" placeholder="Enter UPI ID / Bank Details">
-            <button class="modal-btn" onclick="alert('Withdrawal request submitted successfully!'); closeModal('withdraw-modal');">Submit Request</button>
-        </div>
-    </div>
+    <button onclick="calculateReturn()">Calculate Returns</button>
 
-    <!-- ADD FUND MODAL -->
-    <div class="modal" id="fund-modal">
-        <div class="modal-content">
-            <span class="close-btn" onclick="closeModal('fund-modal')">&times;</span>
-            <h3>Add Fund / Recharge</h3>
-            <p style="font-size: 12px; color: #aaa; margin-bottom: 10px;">UPI ID: <b>mohitcsc@jio</b></p>
-            <input type="number" placeholder="Enter Amount (e.g. 1000)">
-            <input type="text" placeholder="Enter Transaction / UTR ID">
-            <button class="modal-btn" style="background:#00c853;" onclick="alert('Fund Request Submitted!'); closeModal('fund-modal');">Submit Deposit</button>
-        </div>
+    <div class="result" id="resultBox">
+      <div class="result-item">
+        <span>Invested Amount:</span>
+        <span id="investedAmt">₹0</span>
+      </div>
+      <div class="result-item">
+        <span>Estimated Profit:</span>
+        <span id="profitAmt">₹0</span>
+      </div>
+      <div class="result-item">
+        <span>Total Value:</span>
+        <span id="totalAmt">₹0</span>
+      </div>
     </div>
+  </div>
 
-    <!-- PROFILE MODAL -->
-    <div class="modal" id="profile-modal">
-        <div class="modal-content">
-            <span class="close-btn" onclick="closeModal('profile-modal')">&times;</span>
-            <h3>User Profile</h3>
-            <p style="font-size:14px; margin: 8px 0;">Name: <b>Ramesh Chandra</b></p>
-            <p style="font-size:14px; margin: 8px 0;">Sponsor ID: <b>AD40759</b></p>
-            <p style="font-size:14px; margin: 8px 0;">Status: <b style="colo
+  <script>
+    function calculateReturn() {
+      const P = parseFloat(document.getElementById('principal').value);
+      const R = parseFloat(document.getElementById('rate').value);
+      const N = parseFloat(document.getElementById('years').value);
+
+      if (isNaN(P) || isNaN(R) || isNaN(N) || P <= 0 || R <= 0 || N <= 0) {
+        alert("Kripya sahi number bharein.");
+        return;
+      }
+
+      const total = P * Math.pow((1 + R / 100), N);
+      const profit = total - P;
+
+      document.getElementById('investedAmt').innerText = '₹' + P.toLocaleString('en-IN', {maximumFractionDigits: 0});
+      document.getElementById('profitAmt').innerText = '₹' + Math.round(profit).toLocaleString('en-IN');
+      document.getElementById('totalAmt').innerText = '₹' + Math.round(total).toLocaleString('en-IN');
+
+      document.getElementById('resultBox').style.display = 'block';
+    }
+  </script>
+
+</body>
+</html>
